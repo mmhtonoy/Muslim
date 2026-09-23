@@ -222,34 +222,47 @@ button{
 }
 
 .ayahRow{
- display:flex;
- align-items:center;
- gap:8px;
- margin-top:14px
+  display:block;
+  position:relative;
+  margin-top:14px
 }
 
 .ayNav{
- width:30px;
- height:30px;
- flex-shrink:0;
- border:1px solid var(--l);
- background:var(--c);
- border-radius:10px;
- color:var(--g);
- font-size:16px
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:4;
+  width:32px;
+  height:38px;
+  border:1px solid #d6b66a3a;
+  background:#0b241d;
+  border-radius:11px;
+  color:var(--g);
+  font-size:22px;
+  display:grid;
+  place-items:center;
+  box-shadow:0 5px 16px #0005
+}
+
+.ayNav:first-child{left:9px}
+.ayNav:last-child{right:9px}
+
+.ayNav:active{
+  transform:translateY(-50%) scale(.94);
+  background:#12372b
 }
 
 .ayah{
- flex:1;
- min-width:0;
- margin:0;
- padding:13px 15px 15px;
- background:linear-gradient(145deg,#102d25,#0a211a);
- border:1px solid #d6b66a33;
- border-radius:18px;
- box-shadow:0 8px 28px #0004;
- min-height:94px;
- position:relative
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding:15px 52px 17px;
+  background:linear-gradient(145deg,#102d25,#0a211a);
+  border:1px solid #d6b66a44;
+  border-radius:20px;
+  box-shadow:0 10px 30px #0005;
+  min-height:112px;
+  position:relative
 }
 
 .ayTop{
@@ -1325,37 +1338,77 @@ button{
 }
 
 .comp{
- width:250px;
- height:250px;
- border-radius:50%;
- margin:5px auto 18px;
- position:relative;
- border:1px solid #d6b66a88;
- background:radial-gradient(circle,#123328,#071a15 78%);
- box-shadow:
- 0 0 0 8px #d6b66a08,
- 0 0 40px #d6b66a11,
- inset 0 0 35px #0006;
- overflow:hidden
+  width:270px;
+  height:270px;
+  border-radius:50%;
+  margin:5px auto 18px;
+  position:relative;
+  border:1px solid #d6b66a99;
+  background:
+    radial-gradient(circle at 50% 50%,#173d31 0 18%,transparent 18.5%),
+    radial-gradient(circle,#102e25 0,#081c16 67%,#05110d 100%);
+  box-shadow:
+    0 0 0 8px #d6b66a0a,
+    0 0 45px #d6b66a18,
+    inset 0 0 40px #0008;
+  overflow:hidden
 }
 
 .comp:before{
- content:"";
- position:absolute;
- inset:10px;
- border:1px solid #d6b66a2a;
- border-radius:50%;
- z-index:1
+  content:"";
+  position:absolute;
+  inset:13px;
+  border:1px solid #d6b66a38;
+  border-radius:50%;
+  box-shadow:inset 0 0 0 7px #d6b66a05;
+  z-index:1
 }
 
 .comp:after{
- content:"";
- position:absolute;
- inset:26px;
- border:1px dashed #d6b66a3a;
- border-radius:50%;
- animation:slowSpin 50s linear infinite;
- z-index:1
+  content:"";
+  position:absolute;
+  inset:35px;
+  border:1px dashed #d6b66a42;
+  border-radius:50%;
+  animation:slowSpin 55s linear infinite;
+  z-index:1
+}
+
+.kaabaMark{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:42px;
+  height:42px;
+  transform:translate(-50%,-50%);
+  z-index:5;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:linear-gradient(145deg,#11110f,#030303);
+  border:1px solid #d6b66a99;
+  box-shadow:0 0 0 5px #d6b66a0b,0 0 22px #d6b66a22;
+}
+
+.kaabaMark:before{
+  content:"";
+  width:26px;
+  height:24px;
+  background:linear-gradient(#151515 0 29%,#d6b66a 30% 37%,#090909 38%);
+  border:1px solid #8e7a3e;
+  clip-path:polygon(12% 10%,88% 10%,100% 24%,94% 90%,6% 90%,0 24%);
+  box-shadow:inset 0 0 0 2px #050505;
+}
+
+.kaabaMark:after{
+  content:"";
+  position:absolute;
+  width:8px;
+  height:10px;
+  bottom:7px;
+  background:#d6b66a;
+  clip-path:polygon(15% 0,85% 0,100% 100%,0 100%);
+  opacity:.8
 }
 
 @keyframes slowSpin{
@@ -1858,9 +1911,24 @@ button{
  .rtime{font-size:21px}
  .hdate{font-size:21px}
  .circle,.comp{width:235px;height:235px}
+  .kaabaMark{transform:translate(-50%,-50%) scale(.9)}
  .day{min-height:48px}
  .day .hmn{font-size:5px}
 }
+
+/* CALENDAR: HIJRI/ARABIC DATE FIRST */
+.cal-greg{font-size:9px;color:#81978f;letter-spacing:.4px}
+.cal-greg-bn{display:none}
+.cal-hijri-main{font-family:'Scheherazade New','Amiri';font-size:16px;line-height:1.15;color:#f0d994;direction:rtl}
+.cal-hijri-year{font:8px Georgia;color:#b9a96f;margin-top:2px}
+.cal-greg-small{font:7px Georgia;color:#71877f;margin-top:3px;direction:ltr}
+.day .gd{font-size:7px;color:#71877f;margin-top:2px}
+.day .hd{font-family:'Scheherazade New','Amiri';font-size:17px;line-height:1.05;color:#f0d994;direction:rtl}
+.day .hmn{font-family:'Scheherazade New','Amiri';font-size:7px;color:#c9b877;line-height:1.2}
+.selectedDate .sd-g{font-size:8px;color:#81978f;margin-top:3px}
+.selectedDate .sd-h{font-family:'Scheherazade New','Amiri';font-size:22px;color:#f0d994;direction:rtl}
+.selectedDate .sd-bn{font-size:8px;color:#aebdb7}
+
 </style>
 </head>
 
@@ -2331,6 +2399,8 @@ button{
 
     <div class="ticks"></div>
 
+    <div class="kaabaMark" aria-label="Kaaba"></div>
+
     <div class="dir n">N</div>
     <div class="dir e">E</div>
     <div class="dir s">S</div>
@@ -2589,6 +2659,70 @@ const A=[
 [
  "إِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ",
  "নিশ্চয়ই আল্লাহ সৎকর্মশীলদের প্রতিদান নষ্ট করেন না।"
+],
+[
+ "إِنَّ اللَّهَ غَفُورٌ رَّحِيمٌ",
+ "নিশ্চয়ই আল্লাহ পরম ক্ষমাশীল, পরম দয়ালু।"
+],
+[
+ "وَاللَّهُ خَيْرٌ حَافِظًا",
+ "আল্লাহই সর্বোত্তম রক্ষাকারী।"
+],
+[
+ "وَقُل رَّبِّ زِدْنِي عِلْمًا",
+ "আর বলো, হে আমার রব, আমার জ্ঞান বাড়িয়ে দিন।"
+],
+[
+ "إِنَّ رَبِّي قَرِيبٌ مُّجِيبٌ",
+ "নিশ্চয়ই আমার রব নিকটবর্তী, দোয়া কবুলকারী।"
+],
+[
+ "فَاذْكُرُونِي أَذْكُرْكُمْ",
+ "তোমরা আমাকে স্মরণ করো, আমিও তোমাদের স্মরণ করব।"
+],
+[
+ "وَاللَّهُ مَعَكُمْ",
+ "আর আল্লাহ তোমাদের সাথে আছেন।"
+],
+[
+ "إِنَّ اللَّهَ يُحِبُّ التَّوَّابِينَ",
+ "নিশ্চয়ই আল্লাহ তওবাকারীদের ভালোবাসেন।"
+],
+[
+ "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+ "আল্লাহর রহমত থেকে নিরাশ হয়ো না।"
+],
+[
+ "وَبَشِّرِ الصَّابِرِينَ",
+ "ধৈর্যশীলদের সুসংবাদ দাও।"
+],
+[
+ "وَاسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ",
+ "ধৈর্য ও সালাতের মাধ্যমে সাহায্য চাও।"
+],
+[
+ "إِنَّ اللَّهَ يُحِبُّ الْمُحْسِنِينَ",
+ "নিশ্চয়ই আল্লাহ সৎকর্মশীলদের ভালোবাসেন।"
+],
+[
+ "إِنَّ مَعِيَ رَبِّي سَيَهْدِينِ",
+ "নিশ্চয়ই আমার রব আমার সাথে আছেন; তিনি আমাকে পথ দেখাবেন।"
+],
+[
+ "وَمَا تَوْفِيقِي إِلَّا بِاللَّهِ",
+ "আমার সাফল্য কেবল আল্লাহর পক্ষ থেকেই।"
+],
+[
+ "وَإِلَى اللَّهِ تُرْجَعُ الْأُمُورُ",
+ "সব বিষয়ই আল্লাহর কাছেই প্রত্যাবর্তিত হয়।"
+],
+[
+ "رَبِّ اشْرَحْ لِي صَدْرِي",
+ "হে আমার রব, আমার বক্ষ প্রশস্ত করে দিন।"
+],
+[
+ "إِنَّ اللَّهَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+ "নিশ্চয়ই আল্লাহ সবকিছুর ওপর ক্ষমতাবান।"
 ]
 ];
 
@@ -3091,12 +3225,12 @@ function buildCalendar(){
 
   <div class="calcenter">
 
-   <div class="cal-greg">
-    ${first.toLocaleString("en-US",{month:"long"})} ${y}
+   <div class="cal-hijri-main">
+    ${HM_AR[hFirst.month-1]} ${hFirst.year} هـ
    </div>
 
-   <div class="cal-greg-bn">
-    ${MONTH_BN[m]} ${y}
+   <div class="cal-greg-small">
+    ${first.toLocaleString("en-US",{month:"short"})} ${y}
    </div>
 
   </div>
@@ -3175,16 +3309,16 @@ function buildCalendar(){
     class="day ${isToday?"today":""} ${isSelected?"selected":""}"
     onclick="selectCalendarDate(${y},${m},${day})">
 
-    <div class="gd">
-     ${day}
-    </div>
-
     <div class="hd">
-     ${h.day}
+     ${h.day} ${HM_AR[h.month-1]}
     </div>
 
-    <div class="hmn">
-     ${HM_BN[h.month-1]}
+    <div class="cal-hijri-year">
+     ${h.year} هـ
+    </div>
+
+    <div class="gd">
+     ${day} ${first.toLocaleString("en-US",{month:"short"})}
     </div>
 
    </button>
@@ -3207,18 +3341,16 @@ function buildCalendar(){
    SELECTED DATE
   </div>
 
-  <div class="sd-g">
-   ${formatGregorian(sd)}
-  </div>
-
   <div class="sd-h">
    ${sh.day} ${HM_AR[sh.month-1]} ${sh.year} هـ
   </div>
 
+  <div class="sd-g">
+   ${formatGregorian(sd)}
+  </div>
+
   <div class="sd-bn">
-   ${WD_FULL[sd.getDay()]} •
-   ${sh.day} ${HM_BN[sh.month-1]}
-   ${sh.year} হিজরি
+   ${WD_FULL[sd.getDay()]} • ${sh.day} ${HM_BN[sh.month-1]} ${sh.year} হিজরি
   </div>
 
  </div>

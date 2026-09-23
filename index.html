@@ -1861,26 +1861,42 @@ button{
  position:relative;
  z-index:2;
  text-align:center;
- padding:30px 26px;
+ padding:44px 34px;
+ max-width:320px;
+ width:88%;
  border:1px solid var(--g);
- border-radius:22px;
+ border-radius:26px;
  background:linear-gradient(160deg,#102d25,#0a211a);
- box-shadow:0 0 50px #d6b66a33;
+ box-shadow:0 0 60px #d6b66a44;
  animation:secIn .5s ease
 }
 
+.celeb-card .celeb-ar{
+ font-family:'Scheherazade New','Amiri';
+ font-size:26px;
+ color:#e6d59e;
+ margin-bottom:6px
+}
+
 .celeb-card h3{
- margin:0 0 8px;
- font:24px Georgia;
+ margin:0 0 14px;
+ font:34px Georgia;
  letter-spacing:2px;
  color:#f0d994;
- text-shadow:0 0 18px #d6b66a88
+ text-shadow:0 0 22px #d6b66a99
 }
 
 .celeb-card p{
- margin:0;
- font-size:11px;
+ margin:0 0 8px;
+ font-size:13px;
+ line-height:1.6;
  color:#c8d6cf
+}
+
+.celeb-card p:last-child{
+ margin-bottom:0;
+ color:#9db2aa;
+ font-size:11.5px
 }
 
 /* TOAST */
@@ -1964,7 +1980,7 @@ button{
 
   <div>
    <div class="bn">MUSLIM</div>
-   <div class="loc">Gazipur, Bangladesh</div>
+   <div class="loc" id="loc" onclick="requestLocation()" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">Turn on your location</div>
   </div>
 
  </div>
@@ -2539,8 +2555,10 @@ button{
  </div>
 
  <div class="celeb-card">
+  <div class="celeb-ar">ما شاء الله</div>
   <h3>MashaAllah!</h3>
   <p>You completed all 5 prayers today.</p>
+  <p>May Allah accept your Salah and keep this beautiful habit going every single day. 🤍</p>
  </div>
 
 </div>
@@ -2864,6 +2882,7 @@ window.addEventListener("popstate",()=>{
 
 /* PRAYER */
 
+/* names stay fixed; hour/minute (index 2,3) are filled in by calcPrayerTimes() */
 const P=[
  ["Fajr","الفجر",4,30],
  ["Dhuhr / Jumma","الظهر / الجمعة",12,10],
@@ -2881,22 +2900,111 @@ const MK=[
  [19,36]
 ];
 
+/* ---- Location + astronomical prayer-time calculation ---- */
+
+const GAZ_LAT=24.0023, GAZ_LON=90.4264;
+const MK_LAT=21.4225, MK_LON=39.8262;
+
+let curLat=GAZ_LAT, curLon=GAZ_LON;
+
+function ptDTR(d){return d*Math.PI/180}
+function ptRTD(r){return r*180/Math.PI}
+function ptSin(d){return Math.sin(ptDTR(d))}
+function ptCos(d){return Math.cos(ptDTR(d))}
+function ptTan(d){return Math.tan(ptDTR(d))}
+function ptArcsin(x){return ptRTD(Math.asin(x))}
+function ptArccos(x){return ptRTD(Math.acos(x))}
+function ptArccot(x){return ptRTD(Math.atan(1/x))}
+function ptArctan2(y,x){return ptRTD(Math.atan2(y,x))}
+function ptFixHour(a){a=a-24*Math.floor(a/24);return a<0?a+24:a}
+function ptFixAngle(a){a=a-360*Math.floor(a/360);return a<0?a+360:a}
+
+function ptJulian(y,m,d){
+ if(m<=2){y-=1;m+=12}
+ let A=Math.floor(y/100), B=2-A+Math.floor(A/4);
+ return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5;
+}
+
+function ptSunPosition(jd){
+ let D=jd-2451545.0;
+ let g=ptFixAngle(357.529+0.98560028*D);
+ let q=ptFixAngle(280.459+0.98564736*D);
+ let L=ptFixAngle(q+1.915*ptSin(g)+0.020*ptSin(2*g));
+ let e=23.439-0.00000036*D;
+ let decl=ptArcsin(ptSin(e)*ptSin(L));
+ let RA=ptFixHour(ptArctan2(ptCos(e)*ptSin(L),ptCos(L))/15);
+ let eqt=q/15-RA;
+ return {decl,eqt};
+}
+
+function ptTimeDiff(angle,lat,decl){
+ return (1/15)*ptArccos((-ptSin(angle)-ptSin(lat)*ptSin(decl))/(ptCos(lat)*ptCos(decl)));
+}
+
+function ptAsrDiff(factor,lat,decl){
+ let angle=-ptArccot(factor+ptTan(Math.abs(lat-decl)));
+ return ptTimeDiff(angle,lat,decl);
+}
+
+/* Muslim World League angles (18°/17°), Hanafi Asr factor (2) */
+function ptCoreTimes(date,lat,lon,tz){
+
+ let jd=ptJulian(date.getFullYear(),date.getMonth()+1,date.getDate())-lon/(15*24);
+ let sp=ptSunPosition(jd);
+
+ let dhuhr=ptFixHour(12-sp.eqt);
+ let fajr=dhuhr-ptTimeDiff(18,lat,sp.decl);
+ let maghrib=dhuhr+ptTimeDiff(0.833,lat,sp.decl);
+ let isha=dhuhr+ptTimeDiff(17,lat,sp.decl);
+ let asr=dhuhr+ptAsrDiff(2,lat,sp.decl);
+
+ let offset=tz-lon/15;
+
+ function toHM(t){
+  t=ptFixHour(t+offset);
+  let h=Math.floor(t), m=Math.round((t-h)*60);
+  if(m==60){m=0;h+=1;h=ptFixHour(h);}
+  return [h,m];
+ }
+
+ return {
+  fajr:toHM(fajr),
+  dhuhr:toHM(dhuhr),
+  asr:toHM(asr),
+  maghrib:toHM(maghrib),
+  isha:toHM(isha)
+ };
+}
+
+function calcPrayerTimes(date,lat,lon){
+ /* device's current UTC offset — updates automatically while traveling */
+ let tz=-date.getTimezoneOffset()/60;
+ return ptCoreTimes(date,lat,lon,tz);
+}
+
+function calcMakkahTimes(date){
+ /* Makkah has no DST; always UTC+3 */
+ return ptCoreTimes(date,MK_LAT,MK_LON,3);
+}
+
 function fmt12(h,m){
  return `${h>12?h-12:(h==0?12:h)}:${String(m).padStart(2,"0")} ${h>=12?"PM":"AM"}`;
 }
 
-$("prayers").innerHTML=P.map((x,i)=>
- `<div class="pc">
-  <div class="pn">${x[0]} <span class="par">${x[1]}</span></div>
-  <div class="pt">
-   ${fmt12(x[2],x[3])}
-  </div>
-  <div class="pmk">
-   Makkah: ${fmt12(MK[i][0],MK[i][1])}
-  </div>
- </div>`
-).join("")+
-`
+function renderPrayers(){
+
+ $("prayers").innerHTML=P.map((x,i)=>
+  `<div class="pc">
+   <div class="pn">${x[0]} <span class="par">${x[1]}</span></div>
+   <div class="pt">
+    ${fmt12(x[2],x[3])}
+   </div>
+   <div class="pmk">
+    Makkah: ${fmt12(MK[i][0],MK[i][1])}
+   </div>
+  </div>`
+ ).join("")+
+ `
 <div class="pc j">
 
  <div>
@@ -2910,6 +3018,90 @@ $("prayers").innerHTML=P.map((x,i)=>
 
 </div>
 `;
+
+}
+
+function applyPrayerTimes(date,lat,lon){
+
+ let t=calcPrayerTimes(date,lat,lon);
+
+ P[0][2]=t.fajr[0]; P[0][3]=t.fajr[1];
+ P[1][2]=t.dhuhr[0]; P[1][3]=t.dhuhr[1];
+ P[2][2]=t.asr[0]; P[2][3]=t.asr[1];
+ P[3][2]=t.maghrib[0]; P[3][3]=t.maghrib[1];
+ P[4][2]=t.isha[0]; P[4][3]=t.isha[1];
+
+ let mk=calcMakkahTimes(date);
+
+ MK[0]=mk.fajr; MK[1]=mk.dhuhr; MK[2]=mk.asr; MK[3]=mk.maghrib; MK[4]=mk.isha;
+
+ renderPrayers();
+
+}
+
+async function reverseGeocodeName(lat,lon){
+
+ try{
+
+  let r=await fetch(
+   `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+  );
+
+  let j=await r.json();
+
+  let city=j.city||j.locality||j.principalSubdivision||"";
+  let country=j.countryName||"";
+
+  if(city && country) return `${city}, ${country}`;
+  if(country) return country;
+
+ }catch(e){}
+
+ return null;
+
+}
+
+function requestLocation(){
+
+ /* while we don't know the real location yet, prayer times fall back to Gazipur */
+ applyPrayerTimes(new Date(),curLat,curLon);
+
+ if(!navigator.geolocation){
+  $("loc").textContent="Turn on your location";
+  return;
+ }
+
+ navigator.geolocation.getCurrentPosition(
+
+  async p=>{
+
+   curLat=p.coords.latitude;
+   curLon=p.coords.longitude;
+
+   applyPrayerTimes(new Date(),curLat,curLon);
+
+   let name=await reverseGeocodeName(curLat,curLon);
+   $("loc").textContent=name||"Current location";
+
+  },
+
+  ()=>{
+   /* permission denied / unavailable: keep asking, keep Gazipur-based times */
+   $("loc").textContent="Turn on your location";
+  },
+
+  {enableHighAccuracy:false,timeout:8000,maximumAge:600000}
+
+ );
+
+}
+
+requestLocation();
+
+/* keep prayer times correct if the day changes or the device timezone changes (e.g. while traveling) */
+setInterval(()=>{
+ applyPrayerTimes(new Date(),curLat,curLon);
+},60000);
 
 
 let pi=0;
@@ -3263,7 +3455,7 @@ function buildCalendar(){
   </div>
 
   <div class="cal-range">
-   প্রতিটি তারিখের নিচে তার Hijri দিন ও মাস দেখানো হয়েছে
+  
   </div>
 
  </div>
@@ -4389,50 +4581,77 @@ document.addEventListener(
 );
 
 
+function exitApp(){
+
+ try{
+  if(navigator.app && typeof navigator.app.exitApp==="function"){
+   navigator.app.exitApp();
+   return;
+  }
+ }catch(e){}
+
+ try{
+  if(typeof window.close==="function"){
+   window.close();
+   return;
+  }
+ }catch(e){}
+
+}
+
+
 function handleBack(){
+
+ /* step 1: close whatever overlay/modal is open on top, one at a time */
+
+ if($("emojiModal").classList.contains("show")){
+  closeEmojiPicker();
+  return;
+ }
+
+ if($("celeb").classList.contains("show")){
+  closeCeleb();
+  return;
+ }
+
+ if($("pmodal").classList.contains("show")){
+  closeTrack();
+  return;
+ }
+
+ if($("reader").classList.contains("show")){
+  closeQ();
+  return;
+ }
+
+ if($("cp").classList.contains("show")){
+  $("cp").classList.remove("show");
+  return;
+ }
+
+ if($("trk").classList.contains("show")){
+  $("trk").classList.remove("show");
+  return;
+ }
+
+ /* step 2: no overlay open — if we're inside any non-home section, go to app home */
+
+ if(current!="home"){
+  backSection();
+  return;
+ }
+
+ /* step 3: already at app home with nothing open — need a second quick press to exit */
 
  let now=Date.now();
 
-
- if(
-  $("reader").classList.contains("show")
- ){
-
-  closeQ();
-
-  return;
-
- }
-
-
- if(
-  $("cp").classList.contains("show")
- ){
-
-  $("cp").classList.remove("show");
-
-  return;
-
- }
-
-
- if(current!="home"){
-
-  backSection();
-
-  return;
-
- }
-
-
  if(now-lastBack<1800){
 
-  history.back();
-
+  lastBack=0;
+  exitApp();
   return;
 
  }
-
 
  lastBack=now;
 
